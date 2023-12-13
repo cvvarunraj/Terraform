@@ -1,0 +1,34 @@
+resource "google_monitoring_slo" "slo" {
+  service      = var.service
+  display_name = var.slo_name
+  project      = var.project
+
+  goal                = var.slo_target
+  rolling_period_days = var.slo_compliance_period
+
+  request_based_sli {
+    distribution_cut {
+      distribution_filter = var.distribution_filter
+      range {
+        min = var.sli_range_min
+        max = var.sli_range_max
+      }
+    }
+  }
+}
+
+module "alerts" {
+  source = "../alerts"
+
+  project                     = var.project
+  slo_name                    = var.slo_name
+  slo_id                      = google_monitoring_slo.slo.id
+  slo_target                  = var.slo_target
+  slo_compliance_period       = var.slo_compliance_period
+  additional_alerts           = var.additional_alerts
+  alert_notification_channels = var.alert_notification_channels
+  pd_service_name             = var.pd_service_name
+  enable_alerts               = var.enable_alerts
+  deadman_alert               = var.deadman_alert
+  disable_default_alerts      = var.disable_default_alerts
+}
